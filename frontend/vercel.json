@@ -1,7 +1,7 @@
 {
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://dashboard-api.onrender.com/api/:path*" },
-    { "source": "/about.json", "destination": "https://dashboard-api.onrender.com/about.json" },
+    { "source": "/api/:path*", "destination": "https://dashboard-api-1put.onrender.com/api/:path*" },
+    { "source": "/about.json", "destination": "https://dashboard-api-1put.onrender.com/about.json" },
     { "source": "/((?!api/|about.json).*)", "destination": "/index.html" }
   ]
 }
