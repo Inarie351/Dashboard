@@ -54,9 +54,9 @@ services:
       - key: PINTEREST_OAUTH_CALLBACK_URL
         sync: false
       - key: SMTP_HOST
-        sync: false
+        value: smtp-relay.brevo.com
       - key: SMTP_PORT
-        sync: false
+        value: '587'
       - key: SMTP_USER
         sync: false
       - key: SMTP_PASS
