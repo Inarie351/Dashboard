@@ -36,6 +36,9 @@ module.exports = {
   // inbox at http://localhost:8025, so confirmation emails "arrive" without any real credentials.
   // Point these at a real SMTP provider (e.g. a Gmail app password, SendGrid, Mailgun) to send
   // actual emails instead.
+  // Brevo's HTTPS API (port 443). Preferred over SMTP on hosts that block outbound SMTP ports,
+  // such as Render's free tier.
+  brevoApiKey: process.env.BREVO_API_KEY || undefined,
   smtpHost: process.env.SMTP_HOST || 'mailhog',
   smtpPort: parseInt(process.env.SMTP_PORT, 10) || 1025,
   smtpUser: process.env.SMTP_USER || undefined,
