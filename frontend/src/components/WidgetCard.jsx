@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { getWidgetComponents } from '../widgets/registry';
 import { useWidgetRefresh } from '../hooks/useWidgetRefresh';
+import RefreshCountdown from './RefreshCountdown';
 import { DESKTOP_QUERY, useMediaQuery } from '../hooks/useMediaQuery';
 import { IconResize } from './icons';
 
@@ -24,7 +25,7 @@ const SPAN_CLASS = { wide: 'sm:col-span-2 lg:col-span-1', large: 'sm:col-span-2 
 export default function WidgetCard({ widget, onDragStart, onEdit, onDelete, onResize }) {
   const components = getWidgetComponents(widget.serviceName, widget.widgetName);
   const Display = components?.Display;
-  const { data, fetchedAt, error } = useWidgetRefresh(
+  const { data, fetchedAt, error, nextRefreshAt } = useWidgetRefresh(
     widget.id,
     widget.refreshRate,
     JSON.stringify(widget.config),
@@ -136,7 +137,7 @@ export default function WidgetCard({ widget, onDragStart, onEdit, onDelete, onRe
       </div>
       <div className="flex items-center gap-1.5 border-t border-brown-200/60 px-3 py-1.5 text-[11px] text-brown-400">
         <span className="h-1.5 w-1.5 rounded-full bg-olive" />
-        Refreshes every {widget.refreshRate}s
+        <RefreshCountdown refreshRate={widget.refreshRate} nextRefreshAt={nextRefreshAt} />
       </div>
       <div
         role="button"

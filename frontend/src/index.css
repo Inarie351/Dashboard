@@ -257,7 +257,7 @@ h3 {
   border-bottom: 1px solid rgb(var(--color-card-2) / 0.6);
 }
 
-/* Every widget's config form (weather/github/rss/monitoring/maps/youtube/spotify — ~30 files)
+/* Every widget's config form (weather/github/rss/monitoring/maps/youtube — ~30 files)
    uses the same `bg-white/60` input background and `border-white/80` modal border. Overriding
    those two exact utility classes here re-themes every one of them for every dark-background
    theme without touching each file individually. Cherry is light like the default theme, so it

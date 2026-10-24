@@ -9,8 +9,7 @@ const { frontendUrl } = require('../config/env');
 const OAUTH_PROVIDERS = {
   github: require('../services/github/oauth'),
   youtube: require('../services/youtube/oauth'),
-  spotify: require('../services/spotify/oauth'),
-  pinterest: require('../services/pinterest/oauth'),
+  discord: require('../services/discord/oauth'),
 };
 const REQUIRES_AUTH = new Set(Object.keys(OAUTH_PROVIDERS));
 

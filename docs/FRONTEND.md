@@ -31,6 +31,7 @@ frontend/src/
   hooks/
     useAuth.jsx          // session context: user, login, logout, updateUser
     useWidgetRefresh.js  // the Timer — one per widget card
+    useConfirm.jsx       // promise-based confirmation dialog (replaces window.confirm)
     useTheme.js          // theme + custom wallpaper store
   components/
     AppShell.jsx         // floating sidebar + floating top bar around every signed-in page
@@ -39,6 +40,8 @@ frontend/src/
     AdminRoute.jsx       // admins only
     WidgetCard.jsx       // one widget instance: drag, resize, edit, delete, live data
     WidgetFormModal.jsx  // add or edit a widget (service, widget, config, size, refresh rate)
+    ConfirmDialog.jsx    // modal shown before an irreversible action
+    RefreshCountdown.jsx // card footer: refresh rate and seconds left before the next refresh
     icons.jsx
   pages/
     Login  Register  Confirm  Dashboard  Services  Theme  Profile  Admin  Legal  SharedDashboard
@@ -96,7 +99,8 @@ The dashboard is a free-form canvas: each widget is absolutely positioned at its
   itself can be swapped for any other one: values of params both widgets share (e.g. `timezone`
   from one clock to the other) are kept, going back to the original widget restores its saved
   config, and the backend re-validates everything.
-- **Delete** — after a confirmation.
+- **Delete** — after a confirmation in an in-app dialog (`ConfirmDialog`, driven by `useConfirm`),
+  never a native browser `confirm`/`alert` box.
 
 ### Refresh rate: the Timer
 
@@ -117,8 +121,17 @@ widgets. This is `useWidgetRefresh(widgetId, refreshRate, configVersion)`, calle
    instead of at the next tick. Changing the widget's type goes further and remounts the card (its
    React `key` includes the type), so a new display is never handed the previous widget's data.
 
+6. `useWidgetRefresh` also returns `nextRefreshAt`, the time of the next tick. The card footer
+   (`RefreshCountdown`) shows "Refreshes every Ns" and a live "next in Ns" counter. The counter
+   has its own one-second state, so only that label re-renders, not the card or its display.
+
+Between two refreshes a widget **does not move**: it shows the last response and stays frozen. No
+display runs its own clock — the digital and analog clocks show the time as fetched, and
+`countdown` / `days_since` compute their gap at `fetchedAt`. The only widget that runs by itself
+is `timer`, because its start/pause/reset is driven by the user, not by data.
+
 The refresh rate is chosen per widget in the add/edit form (minimum 5 seconds, enforced by the
-backend too) and shown at the bottom of each card. The data endpoint always queries the real
+backend too) and shown at the bottom of each card, with the countdown. The data endpoint always queries the real
 third-party API, so a lower rate means fresher data *and* more calls to that API. Browsers slow
 down timers in background tabs, so a hidden dashboard may refresh less often than configured and
 catches up when it's visible again. The public shared view has no Timer: a visitor refreshes it
@@ -175,7 +188,10 @@ The sidebar collapses to icons by clicking its **D Dashboard** brand; the collap
 ## Pages worth knowing
 
 - **Services** — lists the catalog with the user's status. No-auth services get a *Subscribe*
-  button; OAuth services (`requiresAuth: true`) get a *Connect* button that starts the OAuth flow.
+  button; OAuth services (`requiresAuth: true`) get a *Connect* button that starts the OAuth flow,
+  and, once connected, a *Connected* badge with a *Disconnect* button (`DELETE
+  /api/services/:name/subscribe`, which deletes the stored tokens). The widgets of a disconnected
+  service stay on the dashboard and show "account not linked" until it is connected again.
 - **Profile** — account details (name freely; email or password with the current password; a new
   email must be confirmed), public sharing link, and account deletion (password required).
 - **Legal** — the GDPR notice, reachable without an account and linked from the login and register

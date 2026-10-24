@@ -1,6 +1,6 @@
 // Widget metadata only — feeds services/definitions/clock.js, which registers it with the
 // widget registry so it shows up in GET /about.json. Fetch logic lives in provider.js.
-// No external account needed: this service just reads the server's own clock.
+// No external account needed: the time comes from timeapi.io, a free keyless API.
 module.exports = [
   {
     name: 'digital_clock',

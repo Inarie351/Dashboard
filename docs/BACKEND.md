@@ -52,8 +52,8 @@ backend/
       httpClient.js          // withRetry(): retries transient network failures
       mailer.js              // confirmation emails
       definitions/<svc>.js   // one line per service: registerService(name, catalog)
-      <service>/             // weather, github, rss, monitoring, maps, youtube, spotify,
-        catalog.js           //   pinterest, notes, calendar, clock, website
+      <service>/             // weather, github, rss, monitoring, maps, youtube,
+        catalog.js           //   discord, notes, calendar, clock, website
         client.js            // the actual HTTP calls to the third-party API
         provider.js          // widget name -> client function
         oauth.js             // only for OAuth services
@@ -168,7 +168,7 @@ devices).
 
 ## Linked accounts: OAuth2
 
-GitHub, YouTube (Google), Spotify and Pinterest data is read **on behalf of the user**, with their
+GitHub, YouTube (Google) and Discord data is read **on behalf of the user**, with their
 own account. The backend implements the OAuth2 **Authorization Code** flow by hand (no Passport):
 
 ```mermaid
@@ -210,8 +210,7 @@ Step by step:
    | --------- | --------------------------------------------- | ------------------------- | ------------------------------------------------ |
    | GitHub    | `repo read:user`                              | `client_secret` in body   | Non-expiring unless the app enables expiring tokens |
    | YouTube   | `youtube.readonly`                            | `client_secret` in body   | ~1 h; refresh token forced with `access_type=offline` + `prompt=consent` |
-   | Spotify   | `user-top-read user-read-currently-playing`   | HTTP Basic (`id:secret`)  | ~1 h, refresh token                               |
-   | Pinterest | `boards:read,pins:read`                       | HTTP Basic (`id:secret`)  | Expiring, refresh token                           |
+   | Discord   | `identify guilds`                             | HTTP Basic (`id:secret`)  | ~7 days, refresh token (rotated on refresh)       |
 
 5. **Storage** — the result is normalized to `{ accessToken, refreshToken, expiresAt }` and stored
    in `ServiceSubscription.credentials`, **encrypted at rest** with AES-256-GCM (`crypto.js`): a
@@ -229,7 +228,7 @@ Every OAuth module exposes the same four functions (`buildAuthorizeUrl`, `verify
 `exchangeCodeForToken`, `refreshAccessToken`). Registering one in `OAUTH_PROVIDERS`
 (`services.controller.js`) is enough to get both routes, mark the service `requiresAuth` in
 `GET /api/services`, and forbid subscribing to it without the OAuth flow. Provider-specific
-setup (callback URLs, Google test users, Spotify's `127.0.0.1` rule) is in
+setup (callback URLs, Google test users) is in
 [SERVICES_AND_WIDGETS.md](./SERVICES_AND_WIDGETS.md).
 
 ## Widgets and their data
@@ -347,7 +346,7 @@ the backend directly).
 | `CREDENTIALS_ENCRYPTION_KEY`      | 32-byte hex key for linked-account tokens                 |
 | `ADMIN_EMAILS`                    | Emails promoted to admin at registration                  |
 | `OPENWEATHER_API_KEY`             | Weather service                                           |
-| `GITHUB_*`, `YOUTUBE_*`, `SPOTIFY_*`, `PINTEREST_*` | OAuth apps: client id, secret, callback URL |
+| `GITHUB_*`, `YOUTUBE_*`, `DISCORD_*` | OAuth apps: client id, secret, callback URL |
 | `SMTP_*`, `MAIL_FROM`             | Outgoing email                                            |
 
 ## Tests

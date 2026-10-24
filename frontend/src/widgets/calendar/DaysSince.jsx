@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import WidgetFrame from '../WidgetFrame';
 
 // Countdown's mirror image: instead of counting down to a target date, this counts up from a
-// start date. Same live client-side ticking between Timer polls, just the other direction.
-function diffParts(startDate) {
-  const diffMs = Date.now() - new Date(startDate).getTime();
+// start date. Same snapshot-at-last-fetch behaviour, just the other direction.
+function diffParts(startDate, now) {
+  const diffMs = now - new Date(startDate).getTime();
   const future = diffMs < 0;
   const totalSeconds = Math.floor(Math.abs(diffMs) / 1000);
   return {
@@ -21,17 +21,12 @@ function pad(n) {
 }
 
 export default function DaysSince({ data, fetchedAt, size }) {
-  const [parts, setParts] = useState(() => (data ? diffParts(data.startDate) : null));
-
-  useEffect(() => {
-    if (!data) {
-      setParts(null);
-      return undefined;
-    }
-    setParts(diffParts(data.startDate));
-    const id = setInterval(() => setParts(diffParts(data.startDate)), 1000);
-    return () => clearInterval(id);
-  }, [data]);
+  // Measured at the moment the data was fetched, not at render time: the widget stays frozen
+  // until the next refresh instead of ticking on its own.
+  const parts = useMemo(
+    () => (data ? diffParts(data.startDate, new Date(fetchedAt).getTime()) : null),
+    [data, fetchedAt],
+  );
 
   return (
     <WidgetFrame size={size} data={parts} fetchedAt={fetchedAt}>

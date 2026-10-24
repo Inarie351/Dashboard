@@ -1,5 +1,4 @@
 import WidgetFrame from '../WidgetFrame';
-import { useSweepingClock } from './useSweepingClock';
 
 function handPoint(angleDeg, length) {
   const rad = ((angleDeg - 90) * Math.PI) / 180;
@@ -7,13 +6,11 @@ function handPoint(angleDeg, length) {
 }
 
 export default function AnalogClock({ data, fetchedAt, size }) {
-  const liveData = useSweepingClock(data, fetchedAt);
-
   return (
-    <WidgetFrame size={size} data={liveData} fetchedAt={fetchedAt}>
+    <WidgetFrame size={size} data={data} fetchedAt={fetchedAt}>
       {(d) => {
         // Each hand factors in the finer units below it (seconds into the minute hand, minutes
-        // into the hour hand) so all three sweep continuously instead of jumping once a minute.
+        // into the hour hand) so the hands sit where a real clock's would at that instant.
         const secondAngle = d.seconds * 6;
         const minuteAngle = (d.minutes + d.seconds / 60) * 6;
         const hourAngle = ((d.hours % 12) + d.minutes / 60 + d.seconds / 3600) * 30;

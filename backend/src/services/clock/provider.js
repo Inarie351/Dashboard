@@ -1,36 +1,4 @@
-// No client.js here — unlike every other service, there's no HTTP call to make. The "data
-// source" is the server's own clock, read through Intl for timezone conversion.
-function getTimeParts(timezone) {
-  let parts;
-  try {
-    parts = new Intl.DateTimeFormat('en-US', {
-      timeZone: timezone,
-      hour12: false,
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    }).formatToParts(new Date());
-  } catch {
-    // Intl throws RangeError for a timezone it doesn't recognize (typo, non-IANA name, ...).
-    const err = new Error(`Unknown timezone "${timezone}"`);
-    err.status = 400;
-    throw err;
-  }
-
-  const get = (type) => parts.find((p) => p.type === type)?.value;
-  return {
-    timezone,
-    hours: Number(get('hour')),
-    minutes: Number(get('minute')),
-    seconds: Number(get('second')),
-    weekday: get('weekday'),
-    date: `${get('month')} ${get('day')}, ${get('year')}`,
-  };
-}
+const client = require('./client');
 
 // 24 hours is plenty for a kitchen/pomodoro-style timer and keeps the display to HH:MM:SS.
 const MAX_TIMER_MINUTES = 24 * 60;
@@ -56,8 +24,8 @@ function getTimerSettings({ label, minutes, seconds }) {
 }
 
 const handlers = {
-  digital_clock: (config) => getTimeParts(config.timezone),
-  analog_clock: (config) => getTimeParts(config.timezone),
+  digital_clock: (config) => client.getTimeParts(config.timezone),
+  analog_clock: (config) => client.getTimeParts(config.timezone),
   timer: (config) => getTimerSettings(config),
 };
 
@@ -68,8 +36,8 @@ async function fetchWidgetData(widgetName, config) {
     err.status = 400;
     throw err;
   }
-  const data = handler(config);
+  const data = await handler(config);
   return { data, fetchedAt: new Date().toISOString() };
 }
 
-module.exports = { fetchWidgetData, getTimeParts };
+module.exports = { fetchWidgetData };

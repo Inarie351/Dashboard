@@ -1,0 +1,14 @@
+.git
+**/node_modules
+**/dist
+**/coverage
+*.md
+.env
+docker-compose.yml
+
+# Design references kept in the repo root for the team, never needed inside an image.
+dashboard-mockup.html
+dashboard-project.pdf
+dashboard_background_pic.jpg
+dashboard_mockup/
+dashboard_new_idea.jpg

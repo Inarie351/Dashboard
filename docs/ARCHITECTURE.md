@@ -31,7 +31,7 @@ flowchart TB
     subgraph ext["Third-party APIs"]
         direction LR
         W["OpenWeatherMap"]
-        O["GitHub / Google / Spotify / Pinterest<br/>(OAuth2)"]
+        O["GitHub / Google / Discord<br/>(OAuth2)"]
         X["Open-Meteo, OSRM, Wikipedia/Wikidata, RDAP,<br/>RSS feeds, monitored URLs, any website"]
     end
     Browser -->|"app + /api/*, /about.json"| FE
@@ -51,7 +51,7 @@ flowchart TB
   tokens never reach the browser.
 - `GET /about.json` describes the server and its whole catalog of services and widgets — the
   contract required by the brief. It is generated from the backend's widget registry, so it always
-  matches what's installed (currently **12 services, 37 widgets**).
+  matches what's installed (currently **11 services, 37 widgets**, `notes` included).
 
 ## How a widget works, end to end
 
@@ -77,7 +77,7 @@ what.
 
 | Part                          | Owner           | Scope                                                                                                     |
 | ----------------------------- | --------------- | --------------------------------------------------------------------------------------------------------- |
-| Part 1 — Content & Widgets    | DEGNON Kimberly | Services weather, GitHub, RSS, monitoring, maps, YouTube, Spotify and their widgets and the shared `WidgetFrame`; service subscription; the generic OAuth2 flow and encrypted credentials; network resilience; Theme page and wallpapers; floating app shell; profile editing, account deletion, editing a widget's type; GDPR notice |
+| Part 1 — Content & Widgets    | DEGNON Kimberly | Services weather, GitHub, RSS, monitoring, maps, YouTube and their widgets and the shared `WidgetFrame`; service subscription; the generic OAuth2 flow and encrypted credentials; network resilience; Theme page and wallpapers; floating app shell; profile editing, account deletion, editing a widget's type; GDPR notice |
 | Part 2 — Identity & Infra     | ALAO Olaife     | Accounts (register, confirmation email, login, JWT); the widget registry and `/about.json`; dashboard CRUD, drag and resize; the refresh Timer; public sharing; administration; theme system and sidebar; services Pinterest, notes, calendar, clock, website; Docker, CI |
 
 The [Prisma schema](../backend/prisma/schema.prisma) mirrors the original boundary: Part 1 owns

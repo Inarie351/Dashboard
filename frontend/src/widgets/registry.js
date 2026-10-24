@@ -42,20 +42,14 @@ import YoutubeTopContent from './youtube/TopContent';
 import YoutubeTopContentConfig from './youtube/TopContentConfig';
 import WatchLater from './youtube/WatchLater';
 import WatchLaterConfig from './youtube/WatchLaterConfig';
-import SpotifyAccountStats from './spotify/AccountStats';
-import SpotifyAccountStatsConfig from './spotify/AccountStatsConfig';
-import SpotifyLatestReleases from './spotify/LatestReleases';
-import SpotifyLatestReleasesConfig from './spotify/LatestReleasesConfig';
-import SpotifyTopContent from './spotify/TopContent';
-import SpotifyTopContentConfig from './spotify/TopContentConfig';
-import NowPlaying from './spotify/NowPlaying';
-import NowPlayingConfig from './spotify/NowPlayingConfig';
-import SavedPins from './pinterest/SavedPins';
-import SavedPinsConfig from './pinterest/SavedPinsConfig';
-import BoardStats from './pinterest/BoardStats';
-import BoardStatsConfig from './pinterest/BoardStatsConfig';
-import SearchPins from './pinterest/SearchPins';
-import SearchPinsConfig from './pinterest/SearchPinsConfig';
+import Profile from './discord/Profile';
+import ProfileConfig from './discord/ProfileConfig';
+import MyServers from './discord/MyServers';
+import MyServersConfig from './discord/MyServersConfig';
+import ServerStats from './discord/ServerStats';
+import ServerStatsConfig from './discord/ServerStatsConfig';
+import ChannelMessages from './discord/ChannelMessages';
+import ChannelMessagesConfig from './discord/ChannelMessagesConfig';
 import StickyNote from './notes/StickyNote';
 import StickyNoteConfig from './notes/StickyNoteConfig';
 import Checklist from './notes/Checklist';
@@ -107,16 +101,10 @@ const registry = {
   'youtube:latest_videos': { Display: LatestVideos, Config: LatestVideosConfig },
   'youtube:top_content': { Display: YoutubeTopContent, Config: YoutubeTopContentConfig },
   'youtube:watch_later': { Display: WatchLater, Config: WatchLaterConfig },
-  'spotify:account_stats': { Display: SpotifyAccountStats, Config: SpotifyAccountStatsConfig },
-  'spotify:latest_releases': {
-    Display: SpotifyLatestReleases,
-    Config: SpotifyLatestReleasesConfig,
-  },
-  'spotify:top_content': { Display: SpotifyTopContent, Config: SpotifyTopContentConfig },
-  'spotify:now_playing': { Display: NowPlaying, Config: NowPlayingConfig },
-  'pinterest:saved_pins': { Display: SavedPins, Config: SavedPinsConfig },
-  'pinterest:board_stats': { Display: BoardStats, Config: BoardStatsConfig },
-  'pinterest:search_pins': { Display: SearchPins, Config: SearchPinsConfig },
+  'discord:profile': { Display: Profile, Config: ProfileConfig },
+  'discord:my_servers': { Display: MyServers, Config: MyServersConfig },
+  'discord:server_stats': { Display: ServerStats, Config: ServerStatsConfig },
+  'discord:channel_messages': { Display: ChannelMessages, Config: ChannelMessagesConfig },
   'notes:sticky_note': { Display: StickyNote, Config: StickyNoteConfig },
   'notes:checklist': { Display: Checklist, Config: ChecklistConfig },
   'calendar:month_view': { Display: MonthView, Config: MonthViewConfig },

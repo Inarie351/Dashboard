@@ -2,7 +2,7 @@
 
 A full-stack, highly customizable dashboard. Create an account, subscribe to services, and build
 a personal dashboard out of configurable widgets that pull live data from those services —
-weather, GitHub, RSS feeds, uptime monitoring, YouTube, Spotify, maps — each refreshing itself on
+weather, GitHub, RSS feeds, uptime monitoring, YouTube, maps — each refreshing itself on
 its own schedule.
 
 ## Overview & use cases
@@ -24,8 +24,7 @@ repo, a refresh rate), place it on the grid, and it starts refreshing on its own
 - **Accounts** — register with an email/password, confirm the account via a token before logging
   in, then authenticate with a JWT.
 - **Services** — subscribe to a service to unlock its widgets. Some need nothing (weather, RSS,
-  monitoring, maps), others require linking a third-party account via OAuth2 (GitHub, YouTube,
-  Spotify).
+  monitoring, maps), others require linking a third-party account via OAuth2 (GitHub, YouTube).
 - **Dashboard** — add a widget instance (pick a service + widget, fill in its config, choose a
   size and a refresh rate), drag it around, reconfigure it, or delete it. Two instances of the
   same widget can hold completely different configs and data.
@@ -40,7 +39,7 @@ repo, a refresh rate), place it on the grid, and it starts refreshing on its own
 
 ### Services & widgets currently available
 
-**12 services, 40 widgets** — comfortably above the brief's minimum of `1 + team size` services (3,
+**11 services, 37 widgets** — comfortably above the brief's minimum of `1 + team size` services (3,
 for a team of 2) and `3 × team size` widgets (6). Full parameter-by-parameter reference in
 [`docs/SERVICES_AND_WIDGETS.md`](docs/SERVICES_AND_WIDGETS.md).
 
@@ -52,8 +51,7 @@ for a team of 2) and `3 × team size` widgets (6). Full parameter-by-parameter r
 | `monitoring` | No                     | `uptime_check`, `response_time`, `error_rate`, `latency_tracker`                         |
 | `maps`       | No                     | `directions`, `cycling_route`, `place_lookup`                                            |
 | `youtube`    | Yes (OAuth2, per user) | `channel_stats`, `latest_videos`, `top_content`, `watch_later`                           |
-| `spotify`    | Yes (OAuth2, per user) | `account_stats`, `latest_releases`, `top_content`, `now_playing`                         |
-| `pinterest`  | Yes (OAuth2, per user) | `saved_pins`, `board_stats`, `search_pins`                                               |
+| `discord`    | Yes (OAuth2, per user) | `profile`, `my_servers`, `server_stats`, `channel_messages`                              |
 | `notes`      | No                     | `sticky_note`, `checklist`                                                               |
 | `calendar`   | No                     | `month_view`, `countdown`, `days_since`                                                  |
 | `clock`      | No                     | `digital_clock`, `analog_clock`, `timer`                                                 |
@@ -108,10 +106,10 @@ That's it: this works cold, with zero manual setup. It starts four containers �
 - API root / contract check: [http://localhost:8080/about.json](http://localhost:8080/about.json)
 
 `rss`, `monitoring` and `maps` work with zero configuration. To use `weather`, `github`, `youtube`
-or `spotify` with real data (rather than an error shown on the widget), copy `.env.example` to
+with real data (rather than an error shown on the widget), copy `.env.example` to
 `.env` at the repo root, fill in the credentials for whichever service you want (see
 [`docs/SERVICES_AND_WIDGETS.md`](docs/SERVICES_AND_WIDGETS.md) for exactly what each one needs and
-where to get it — an OpenWeather API key, a GitHub/Google/Spotify OAuth app, etc.), and
+where to get it — an OpenWeather API key, a GitHub/Google OAuth app, etc.), and
 `CREDENTIALS_ENCRYPTION_KEY` (see the comment above it in `.env.example` for how to generate one,
 required as soon as any OAuth service is linked) — then `docker compose up --build` again. None of
 this is required for the app to start or for the dashboard's CRUD/timer/admin features to work.
@@ -149,7 +147,7 @@ npm run dev:frontend        # http://localhost:5173
    deliver actual emails instead — see `.env.example`.
 2. Log in.
 3. Open **Manage services** to subscribe to a no-auth service (weather, RSS, monitoring, maps —
-   instant) or connect an OAuth one (GitHub, YouTube, Spotify — redirects to that provider's login).
+   instant) or connect an OAuth one (GitHub, YouTube — redirects to that provider's login).
 4. On the dashboard, click **+ Add widget**, pick a service and a widget, fill in its config and
    a refresh rate, and confirm — it appears on the board and starts refreshing itself.
 5. Drag a widget to reposition it, use **Edit** to reconfigure it, **Delete** to remove it.
@@ -160,5 +158,5 @@ npm run dev:frontend        # http://localhost:5173
 
 - ALAO Olaife — Dashboard & Infrastructure (auth, dashboard CRUD, timer, admin, `/about.json`,
   Docker/CI)
-- DEGNON Kimberly — Content & Widgets (weather, GitHub, RSS, monitoring, maps, YouTube, Spotify,
+- DEGNON Kimberly — Content & Widgets (weather, GitHub, RSS, monitoring, maps, YouTube,
   their widgets, service subscription)

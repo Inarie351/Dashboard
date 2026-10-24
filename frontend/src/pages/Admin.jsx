@@ -2,9 +2,11 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import * as adminApi from '../api/admin';
 import AppShell from '../components/AppShell';
+import { useConfirm } from '../hooks/useConfirm';
 
 export default function Admin() {
   const { user: currentUser } = useAuth();
+  const { confirm, confirmDialog } = useConfirm();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -28,9 +30,13 @@ export default function Admin() {
   }
 
   async function removeUser(targetUser) {
-    if (!window.confirm(`Delete the account "${targetUser.email}"? This cannot be undone.`)) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: 'Delete this account?',
+      message: `The account "${targetUser.email}" will be deleted. This cannot be undone.`,
+      confirmLabel: 'Delete',
+      danger: true,
+    });
+    if (!confirmed) return;
     try {
       await adminApi.deleteUser(targetUser.id);
       setUsers((prev) => prev.filter((u) => u.id !== targetUser.id));
@@ -124,6 +130,7 @@ export default function Admin() {
           </table>
         </div>
       </div>
+      {confirmDialog}
     </AppShell>
   );
 }

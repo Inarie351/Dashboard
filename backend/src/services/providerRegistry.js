@@ -6,8 +6,7 @@ const monitoringProvider = require('./monitoring/provider');
 const rssProvider = require('./rss/provider');
 const mapsProvider = require('./maps/provider');
 const youtubeProvider = require('./youtube/provider');
-const spotifyProvider = require('./spotify/provider');
-const pinterestProvider = require('./pinterest/provider');
+const discordProvider = require('./discord/provider');
 const notesProvider = require('./notes/provider');
 const calendarProvider = require('./calendar/provider');
 const clockProvider = require('./clock/provider');
@@ -20,8 +19,7 @@ const providers = {
   rss: rssProvider,
   maps: mapsProvider,
   youtube: youtubeProvider,
-  spotify: spotifyProvider,
-  pinterest: pinterestProvider,
+  discord: discordProvider,
   notes: notesProvider,
   calendar: calendarProvider,
   clock: clockProvider,

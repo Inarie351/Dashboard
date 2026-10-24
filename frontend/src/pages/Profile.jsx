@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import AppShell from '../components/AppShell';
+import { useConfirm } from '../hooks/useConfirm';
 import * as shareApi from '../api/share';
 import * as authApi from '../api/auth';
 
 function ShareDashboard() {
+  const { confirm, confirmDialog } = useConfirm();
   const [shareToken, setShareToken] = useState(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -31,7 +33,13 @@ function ShareDashboard() {
   }
 
   async function handleDisable() {
-    if (!window.confirm('Turn off sharing? The current link will stop working.')) return;
+    const confirmed = await confirm({
+      title: 'Turn off sharing?',
+      message: 'The current link will stop working.',
+      confirmLabel: 'Turn off',
+      danger: true,
+    });
+    if (!confirmed) return;
     setBusy(true);
     try {
       await shareApi.disableSharing();
@@ -52,6 +60,7 @@ function ShareDashboard() {
 
   return (
     <div className="glass mt-4 rounded-2xl p-6 shadow-xl shadow-brown-900/10">
+      {confirmDialog}
       <p className="font-medium text-brown-800">Share my dashboard</p>
       <p className="mt-1 text-sm text-brown-400">
         Anyone with the link can view a live, read-only copy of your dashboard — no account needed.
@@ -285,7 +294,7 @@ function DeleteAccount() {
       <p className="font-medium text-terracotta">Delete my account</p>
       <p className="mt-1 text-sm text-brown-400">
         Permanently removes your account, your dashboard, its widgets and every linked service. This
-        can't be undone.
+        can&apos;t be undone.
       </p>
 
       {open ? (

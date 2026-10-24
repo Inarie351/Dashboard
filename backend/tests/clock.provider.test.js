@@ -1,28 +1,46 @@
+jest.mock('../src/services/clock/client');
+
+const client = require('../src/services/clock/client');
 const provider = require('../src/services/clock/provider');
 
 describe('clock provider', () => {
+  afterEach(() => jest.resetAllMocks());
+
   it('reads the current time in a given timezone for the digital clock', async () => {
+    client.getTimeParts.mockResolvedValue({
+      timezone: 'UTC',
+      hours: 14,
+      minutes: 5,
+      seconds: 9,
+      weekday: 'Thursday',
+      date: 'October 8, 2026',
+    });
+
     const result = await provider.fetchWidgetData('digital_clock', { timezone: 'UTC' });
 
-    expect(result.data.timezone).toBe('UTC');
-    expect(result.data.hours).toBeGreaterThanOrEqual(0);
-    expect(result.data.hours).toBeLessThanOrEqual(23);
-    expect(result.data.minutes).toBeGreaterThanOrEqual(0);
-    expect(result.data.weekday).toEqual(expect.any(String));
+    expect(client.getTimeParts).toHaveBeenCalledWith('UTC');
+    expect(result.data.hours).toBe(14);
+    expect(result.data.weekday).toBe('Thursday');
     expect(result.fetchedAt).toEqual(expect.any(String));
   });
 
   it('reads the same shape of data for the analog clock', async () => {
+    client.getTimeParts.mockResolvedValue({ timezone: 'Europe/Paris', seconds: 30 });
+
     const result = await provider.fetchWidgetData('analog_clock', { timezone: 'Europe/Paris' });
 
-    expect(result.data.timezone).toBe('Europe/Paris');
-    expect(result.data.seconds).toBeGreaterThanOrEqual(0);
+    expect(client.getTimeParts).toHaveBeenCalledWith('Europe/Paris');
+    expect(result.data.seconds).toBe(30);
   });
 
-  it('rejects an unknown timezone', async () => {
+  it('propagates an unknown timezone error from the time service', async () => {
+    client.getTimeParts.mockRejectedValue(
+      Object.assign(new Error('Unknown timezone "Not/A_Timezone"'), { status: 400 }),
+    );
+
     await expect(
       provider.fetchWidgetData('digital_clock', { timezone: 'Not/A_Timezone' }),
-    ).rejects.toThrow(/Unknown timezone/);
+    ).rejects.toMatchObject({ status: 400, message: expect.stringMatching(/Unknown timezone/) });
   });
 
   it('turns the timer duration into seconds', async () => {

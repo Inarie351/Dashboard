@@ -23,14 +23,6 @@ jest.mock('../src/services/youtube/oauth', () => ({
   ),
 }));
 
-jest.mock('../src/services/spotify/oauth', () => ({
-  buildAuthorizeUrl: jest.fn(() => 'https://accounts.spotify.com/authorize?mock=1'),
-  verifyState: jest.fn(() => '1'),
-  exchangeCodeForToken: jest.fn(() =>
-    Promise.resolve({ accessToken: 'BQC_mock_token', refreshToken: 'AQC_mock', expiresAt: null }),
-  ),
-}));
-
 process.env.CREDENTIALS_ENCRYPTION_KEY = '0123456789abcdef'.repeat(4);
 
 const request = require('supertest');
@@ -117,6 +109,17 @@ describe('services routes', () => {
     });
   });
 
+  it('disconnects an OAuth service by deleting its stored credentials', async () => {
+    const res = await request(app)
+      .delete('/api/services/github/subscribe')
+      .set('Authorization', authHeader());
+
+    expect(res.status).toBe(200);
+    expect(prisma.serviceSubscription.deleteMany).toHaveBeenCalledWith({
+      where: { userId: '1', serviceName: 'github' },
+    });
+  });
+
   it('rejects subscribing to github directly, since it requires the OAuth flow', async () => {
     const res = await request(app)
       .post('/api/services/github/subscribe')
@@ -188,32 +191,6 @@ describe('services routes', () => {
     });
     expect(res.status).toBe(302);
     expect(res.headers.location).toContain('/services?linked=youtube');
-  });
-
-  it('returns the Spotify OAuth authorize URL', async () => {
-    const res = await request(app)
-      .get('/api/services/spotify/oauth/start')
-      .set('Authorization', authHeader());
-
-    expect(res.status).toBe(200);
-    expect(res.body.url).toContain('accounts.spotify.com');
-  });
-
-  it('links the Spotify account on callback, storing encrypted credentials', async () => {
-    const res = await request(app).get('/api/services/spotify/oauth/callback').query({
-      code: 'abc',
-      state: 'signed-state',
-    });
-
-    const { create } = prisma.serviceSubscription.upsert.mock.calls[0][0];
-    expect(create).toMatchObject({ userId: '1', serviceName: 'spotify' });
-    expect(decryptCredentials(create.credentials)).toEqual({
-      accessToken: 'BQC_mock_token',
-      refreshToken: 'AQC_mock',
-      expiresAt: null,
-    });
-    expect(res.status).toBe(302);
-    expect(res.headers.location).toContain('/services?linked=spotify');
   });
 
   it('rejects an OAuth start request for a service with no OAuth flow', async () => {

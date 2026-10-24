@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import WidgetFrame from '../WidgetFrame';
 
 // The server only resolves targetDate into a coarse daysRemaining figure. Since it's already
-// sending us the exact target date, the fine-grained days/hours/minutes/seconds — and the
-// second-by-second ticking — can happen entirely client-side.
-function diffParts(targetDate) {
-  const diffMs = new Date(targetDate).getTime() - Date.now();
+// sending us the exact target date, the fine-grained days/hours/minutes/seconds are worked out
+// client-side, as of the last fetch.
+function diffParts(targetDate, now) {
+  const diffMs = new Date(targetDate).getTime() - now;
   const past = diffMs < 0;
   const totalSeconds = Math.floor(Math.abs(diffMs) / 1000);
   return {
@@ -22,17 +22,12 @@ function pad(n) {
 }
 
 export default function Countdown({ data, fetchedAt, size }) {
-  const [parts, setParts] = useState(() => (data ? diffParts(data.targetDate) : null));
-
-  useEffect(() => {
-    if (!data) {
-      setParts(null);
-      return undefined;
-    }
-    setParts(diffParts(data.targetDate));
-    const id = setInterval(() => setParts(diffParts(data.targetDate)), 1000);
-    return () => clearInterval(id);
-  }, [data]);
+  // Measured at the moment the data was fetched, not at render time: the widget stays frozen
+  // until the next refresh instead of ticking on its own.
+  const parts = useMemo(
+    () => (data ? diffParts(data.targetDate, new Date(fetchedAt).getTime()) : null),
+    [data, fetchedAt],
+  );
 
   return (
     <WidgetFrame size={size} data={parts} fetchedAt={fetchedAt}>

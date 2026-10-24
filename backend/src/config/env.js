@@ -15,23 +15,18 @@ module.exports = {
     process.env.GITHUB_OAUTH_CALLBACK_URL ||
     'http://localhost:8080/api/services/github/oauth/callback',
   credentialsEncryptionKey: process.env.CREDENTIALS_ENCRYPTION_KEY,
-  spotifyClientId: process.env.SPOTIFY_CLIENT_ID,
-  spotifyClientSecret: process.env.SPOTIFY_CLIENT_SECRET,
   youtubeClientId: process.env.YOUTUBE_CLIENT_ID,
   youtubeClientSecret: process.env.YOUTUBE_CLIENT_SECRET,
   youtubeOauthCallbackUrl:
     process.env.YOUTUBE_OAUTH_CALLBACK_URL ||
     'http://localhost:8080/api/services/youtube/oauth/callback',
-  // Spotify rejects a plain "localhost" redirect URI as insecure — it has to be the loopback IP,
-  // 127.0.0.1, instead. Same machine, same port, just a different hostname Spotify will accept.
-  spotifyOauthCallbackUrl:
-    process.env.SPOTIFY_OAUTH_CALLBACK_URL ||
-    'http://127.0.0.1:8080/api/services/spotify/oauth/callback',
-  pinterestClientId: process.env.PINTEREST_CLIENT_ID,
-  pinterestClientSecret: process.env.PINTEREST_CLIENT_SECRET,
-  pinterestOauthCallbackUrl:
-    process.env.PINTEREST_OAUTH_CALLBACK_URL ||
-    'http://localhost:8080/api/services/pinterest/oauth/callback',
+  discordClientId: process.env.DISCORD_CLIENT_ID,
+  discordClientSecret: process.env.DISCORD_CLIENT_SECRET,
+  // Bot token (not an OAuth secret): lets the backend read the messages of public channels.
+  discordBotToken: process.env.DISCORD_BOT_TOKEN,
+  discordOauthCallbackUrl:
+    process.env.DISCORD_OAUTH_CALLBACK_URL ||
+    'http://localhost:8080/api/services/discord/oauth/callback',
   // Defaults target the MailHog service in docker-compose.yml — a fake SMTP server with a web
   // inbox at http://localhost:8025, so confirmation emails "arrive" without any real credentials.
   // Point these at a real SMTP provider (e.g. a Gmail app password, SendGrid, Mailgun) to send

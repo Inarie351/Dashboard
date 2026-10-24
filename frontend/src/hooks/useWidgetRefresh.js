@@ -8,6 +8,7 @@ export function useWidgetRefresh(widgetId, refreshRateSeconds, configVersion) {
   const [data, setData] = useState(null);
   const [fetchedAt, setFetchedAt] = useState(null);
   const [error, setError] = useState(null);
+  const [nextRefreshAt, setNextRefreshAt] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -26,8 +27,14 @@ export function useWidgetRefresh(widgetId, refreshRateSeconds, configVersion) {
       }
     }
 
-    tick();
-    const interval = setInterval(tick, refreshRateSeconds * 1000);
+    // `nextRefreshAt` lets the card show a live countdown without owning a second timer.
+    function scheduleTick() {
+      setNextRefreshAt(Date.now() + refreshRateSeconds * 1000);
+      tick();
+    }
+
+    scheduleTick();
+    const interval = setInterval(scheduleTick, refreshRateSeconds * 1000);
 
     return () => {
       cancelled = true;
@@ -35,5 +42,5 @@ export function useWidgetRefresh(widgetId, refreshRateSeconds, configVersion) {
     };
   }, [widgetId, refreshRateSeconds, configVersion]);
 
-  return { data, fetchedAt, error };
+  return { data, fetchedAt, error, nextRefreshAt };
 }

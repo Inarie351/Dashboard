@@ -4,10 +4,12 @@ import * as dashboardApi from '../api/dashboard';
 import WidgetCard from '../components/WidgetCard';
 import WidgetFormModal from '../components/WidgetFormModal';
 import AppShell from '../components/AppShell';
+import { useConfirm } from '../hooks/useConfirm';
 import { useAuth } from '../hooks/useAuth';
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const { confirm, confirmDialog } = useConfirm();
   const canvasRef = useRef(null);
 
   const [catalogue, setCatalogue] = useState([]);
@@ -86,7 +88,13 @@ export default function Dashboard() {
   }
 
   async function handleDelete(widget) {
-    if (!window.confirm(`Remove the "${widget.widgetName}" widget?`)) return;
+    const confirmed = await confirm({
+      title: 'Remove this widget?',
+      message: `The "${widget.widgetName}" widget will be removed from your dashboard.`,
+      confirmLabel: 'Remove',
+      danger: true,
+    });
+    if (!confirmed) return;
     setWidgets((prev) => prev.filter((w) => w.id !== widget.id));
     try {
       await dashboardApi.deleteWidget(widget.id);
@@ -160,6 +168,7 @@ export default function Dashboard() {
           onSubmit={modalMode === 'add' ? handleAdd : handleEditSubmit}
         />
       )}
+      {confirmDialog}
     </AppShell>
   );
 }

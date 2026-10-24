@@ -13,7 +13,7 @@ flowchart LR
     V -- "proxy /api/*, /about.json" --> A["Backend container<br/>Express :8080"]
     A --> DB[("PostgreSQL :5432")]
     A --> M["MailHog / SMTP"]
-    A --> T["Third-party APIs<br/>OpenWeather, GitHub, Google, Spotify, ..."]
+    A --> T["Third-party APIs<br/>OpenWeather, GitHub, Google, ..."]
     B -. "OAuth callback only<br/>(top-level redirect)" .-> A
 ```
 
@@ -25,8 +25,7 @@ flowchart LR
 - The backend still restricts CORS to `FRONTEND_URL`, for setups where the frontend calls it
   directly.
 - **Exception — OAuth2 callbacks.** Providers redirect the browser straight to the backend
-  (`http://localhost:8080/api/services/<service>/oauth/callback`; Spotify requires
-  `127.0.0.1`). The backend then redirects the browser back to the frontend. See
+  (`http://localhost:8080/api/services/<service>/oauth/callback`). The backend then redirects the browser back to the frontend. See
   [OAuth2](#linking-a-third-party-account-oauth2).
 - **Confirmation emails** link to the frontend (`/confirm/:token`), which calls the API.
 
@@ -113,7 +112,7 @@ a mistyped password or an expired GitHub link would kick the user out of the app
 ### `GET /about.json`
 
 Generated live from the backend's widget registry, so it always lists exactly the services that
-are installed (currently 12 services, 37 widgets):
+are installed (currently 10 services, 35 widgets — the `notes` service is left out, see its section):
 
 ```json
 {

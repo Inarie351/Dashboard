@@ -14,7 +14,7 @@ function formatDuration(totalSeconds) {
 
 // Unlike the other clock widgets, the timer's running state (counting down, paused, time left)
 // only exists in this browser tab — the server just validates and stores the configured duration.
-// Counting down from an absolute end timestamp (like useSweepingClock/useLiveClock do) rather than
+// Counting down from an absolute end timestamp rather than
 // decrementing a counter every second keeps it accurate even if the tab is backgrounded and tick
 // intervals get throttled.
 export default function Timer({ data, fetchedAt, size }) {

@@ -11,8 +11,10 @@ const THIRD_PARTIES_SERVER = [
   ['OpenWeatherMap', 'the city names of your weather widgets'],
   ['GitHub', 'your GitHub access token and the repositories/handles you configure'],
   ['Google (YouTube)', 'your YouTube access token and the channel IDs you configure'],
-  ['Spotify', 'your Spotify access token and the artist IDs you configure'],
-  ['Pinterest', 'your Pinterest access token and the board IDs you configure'],
+  [
+    'Discord',
+    'your Discord access token, the server and channel IDs you configure; the bot reads the latest messages of the public channels you display',
+  ],
   ['Open-Meteo and OSRM', 'the place names of your maps widgets'],
   ['Wikipedia and Wikidata (Wikimedia)', 'the name you look up in a knowledge panel widget'],
   ['RDAP registries (through rdap.org)', 'the domain name of your domain info widgets'],
@@ -26,7 +28,7 @@ const THIRD_PARTIES_BROWSER = [
   ['Google Fonts', 'loads the fonts of the interface'],
   ['The websites shown by the website overview widget', 'serve its icon and preview image'],
   ['Wikimedia', 'serves the images of the knowledge panel widget'],
-  ['Pinterest', 'serves the pin images of the saved pins widget'],
+  ['Discord', 'serves the avatar and server icons of the Discord widgets'],
 ];
 
 const STORAGE_KEYS = [
@@ -106,7 +108,7 @@ export default function Legal() {
                 ],
                 [
                   'Linked accounts',
-                  'the access tokens of the services you connect (GitHub, YouTube, Spotify, Pinterest), encrypted at rest with AES-256-GCM',
+                  'the access tokens of the services you connect (GitHub, YouTube, Discord), encrypted at rest with AES-256-GCM',
                 ],
                 [
                   'Technical tokens',
@@ -150,7 +152,7 @@ export default function Legal() {
           <Section title="How long we keep it">
             <p>
               As long as your account exists. Deleting your account from the Profile page erases it
-              immediately, together with your dashboard, your widgets and your linked accounts'
+              immediately, together with your dashboard, your widgets and your linked accounts&apos;
               tokens. If you turn dashboard sharing on, anyone with the link can view your widgets
               until you turn it off.
             </p>

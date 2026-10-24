@@ -6,14 +6,12 @@ const prisma = require('../config/prisma');
 const { encryptCredentials, decryptCredentials } = require('./crypto');
 const githubOauth = require('./github/oauth');
 const youtubeOauth = require('./youtube/oauth');
-const spotifyOauth = require('./spotify/oauth');
-const pinterestOauth = require('./pinterest/oauth');
+const discordOauth = require('./discord/oauth');
 
 const REFRESHERS = {
   github: githubOauth.refreshAccessToken,
   youtube: youtubeOauth.refreshAccessToken,
-  spotify: spotifyOauth.refreshAccessToken,
-  pinterest: pinterestOauth.refreshAccessToken,
+  discord: discordOauth.refreshAccessToken,
 };
 
 async function loadCredentials(subscription) {

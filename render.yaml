@@ -35,23 +35,19 @@ services:
         sync: false
       - key: GITHUB_OAUTH_CALLBACK_URL
         sync: false
-      - key: SPOTIFY_CLIENT_ID
-        sync: false
-      - key: SPOTIFY_CLIENT_SECRET
-        sync: false
-      - key: SPOTIFY_OAUTH_CALLBACK_URL
-        sync: false
       - key: YOUTUBE_CLIENT_ID
         sync: false
       - key: YOUTUBE_CLIENT_SECRET
         sync: false
       - key: YOUTUBE_OAUTH_CALLBACK_URL
         sync: false
-      - key: PINTEREST_CLIENT_ID
+      - key: DISCORD_CLIENT_ID
         sync: false
-      - key: PINTEREST_CLIENT_SECRET
+      - key: DISCORD_CLIENT_SECRET
         sync: false
-      - key: PINTEREST_OAUTH_CALLBACK_URL
+      - key: DISCORD_OAUTH_CALLBACK_URL
+        sync: false
+      - key: DISCORD_BOT_TOKEN
         sync: false
       - key: BREVO_API_KEY
         sync: false

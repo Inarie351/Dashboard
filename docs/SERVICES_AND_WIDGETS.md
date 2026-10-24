@@ -5,7 +5,7 @@ widget does, its exact configurable parameters (matching `GET /about.json` verba
 each service needs to actually work. See [ARCHITECTURE.md](./ARCHITECTURE.md) for how the
 registry/provider mechanism behind all of this fits together.
 
-**12 services, 37 widgets** — comfortably above the brief's minimum of `1 + team size` services
+**11 services, 37 widgets** — comfortably above the brief's minimum of `1 + team size` services
 (3, for a team of 2) and `3 × team size` widgets (6).
 
 ## Overview
@@ -17,13 +17,12 @@ registry/provider mechanism behind all of this fits together.
 | `rss`        | None              | 3       | Yes                     |
 | `monitoring` | None              | 4       | Yes                     |
 | `youtube`    | OAuth2 (per user) | 4       | No — needs an OAuth app |
-| `spotify`    | OAuth2 (per user) | 4       | No — needs an OAuth app |
 | `maps`       | None              | 3       | Yes                     |
-| `pinterest`  | OAuth2 (per user) | 2       | No — needs an OAuth app |
+| `discord`    | OAuth2 (per user) | 4       | No — needs an OAuth app |
 | `notes`      | None              | 2       | Yes                     |
-| `calendar`   | None              | 2       | Yes                     |
-| `clock`      | None              | 2       | Yes                     |
-| `website`    | None              | 1       | Yes                     |
+| `calendar`   | None              | 3       | Yes                     |
+| `clock`      | None              | 3       | Yes                     |
+| `website`    | None              | 3       | Yes                     |
 
 "Needs an API key / OAuth app" is a one-time setup by whoever deploys the dashboard (values go in
 `.env`, see `.env.example`) — end users never create keys themselves. For OAuth services, each end
@@ -107,30 +106,6 @@ account, one token, every widget), the same way `github` does.
 `YOUTUBE_OAUTH_CALLBACK_URL`). The OAuth consent screen must be in "Testing" mode with the
 account's email added as a test user, or Google refuses the login for an unverified app.
 
-## Spotify
-
-Requires linking a Spotify account via OAuth2 (`Connect Spotify` on the Services page). Every
-widget is authenticated with the logged-in user's own access token, same reasoning as `youtube`
-above.
-
-| Widget            | Params                                                        | Description                                             |
-| ----------------- | ------------------------------------------------------------- | ------------------------------------------------------- |
-| `account_stats`   | `artist_id` (string)                                          | Followers of a followed artist                          |
-| `latest_releases` | `artist_id` (string), `count` (integer)                       | Latest titles/singles released by an artist             |
-| `top_content`     | `time_range` (string: `short_term`/`medium_term`/`long_term`) | The logged-in user's most listened tracks over a period |
-| `now_playing`     | `show_progress` (integer: 0/1)                                | The logged-in user's currently playing track            |
-
-**Backend needs**: a Spotify app (`SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`,
-`SPOTIFY_OAUTH_CALLBACK_URL`), Authorization Code grant. Unlike a public-artist-only integration,
-`top_content` here reads the real, correctly time-ranged endpoint (`/me/top/tracks`), since it acts
-on behalf of the logged-in user.
-
-**Redirect URI gotcha**: Spotify's dashboard rejects `http://localhost/...` redirect URIs as
-insecure — register `http://127.0.0.1:8080/api/services/spotify/oauth/callback` instead (same
-machine, loopback IP). That's already the default for `SPOTIFY_OAUTH_CALLBACK_URL`; the value
-registered in the Spotify dashboard and the one the backend sends must match character for
-character.
-
 ## Maps
 
 No account required — both APIs behind it are free and key-less.
@@ -154,20 +129,35 @@ debounced client-side (300ms, 2-character minimum) and cached server-side per qu
 so repeated keystrokes on the same partial name don't each trigger a fresh outbound call. Like
 `place_lookup` itself, suggestions are advisory — the field still accepts any text typed or pasted.
 
-## Pinterest
+## Discord
 
-Requires linking a Pinterest account via OAuth2 (`Connect Pinterest` on the Services page).
+Requires linking a Discord account via OAuth2 (`Connect Discord` on the Services page).
 
-| Widget        | Params                                 | Description                                                |
-| ------------- | --------------------------------------- | ----------------------------------------------------------- |
-| `saved_pins`  | `board_id` (string), `count` (integer) | Latest pins saved on a board                               |
-| `board_stats` | `board_id` (string)                    | A board's name, description, pin count and follower count  |
-| `search_pins` | `query` (string), `count` (integer)    | Pins matching a keyword search, independent of any one board |
+| Widget         | Params                      | Description                                                    |
+| -------------- | --------------------------- | -------------------------------------------------------------- |
+| `profile`      | `avatar_size` (integer)     | The linked account's avatar, display name and username         |
+| `my_servers`   | `count` (integer)           | The servers the account belongs to, with member counts         |
+| `server_stats` | `guild_id` (string)         | A server's name, owner status, member count and online members |
+| `channel_messages` | `channel_id` (string), `count` (integer) | The latest messages of a public channel         |
 
-**Backend needs**: a Pinterest app (`PINTEREST_CLIENT_ID`, `PINTEREST_CLIENT_SECRET`,
-`PINTEREST_OAUTH_CALLBACK_URL`), Authorization Code grant (scope `boards:read,pins:read`). Linked
-accounts' tokens are encrypted at rest and transparently refreshed, same as every other OAuth
-service here.
+`avatar_size` accepts the sizes the Discord CDN serves (16, 32, 64, 128, 256 or 512 px; anything else
+falls back to 128). `guild_id` is the server ID, found with Developer Mode enabled (right-click the
+server, *Copy Server ID*); the account must be a member of that server. Member and online counts
+come from `GET /users/@me/guilds?with_counts=true`, so they are approximate values.
+
+**Messages (`channel_messages`)**: Discord exposes neither a user's notifications nor their DMs to
+applications, and a user's OAuth token can't read channels. Messages are read by a **bot** of the same
+application (`DISCORD_BOT_TOKEN`) that must be invited to the server, with the *Message Content*
+intent enabled to receive the text (without it, content comes back empty). Since the bot sees far
+more than any one user, a channel is only shown when the linked account is a member of its server
+**and** `@everyone` can view it and read its history (checked from the server's roles and the
+channel's permission overwrites); private channels return a 403. At most 20 messages, text cut at
+300 characters, mentions and custom emojis rewritten as plain names.
+
+**Backend needs**: a Discord application (`DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`,
+`DISCORD_OAUTH_CALLBACK_URL`), Authorization Code grant (scopes `identify guilds`, `prompt=consent`
+so the consent screen always shows). Linked accounts' tokens are encrypted at rest and
+transparently refreshed, same as every other OAuth service here.
 
 ## Notes
 
@@ -192,11 +182,13 @@ No account required — both widgets are computed purely from their params.
 | `countdown`  | `label` (string), `target_date` (string, `YYYY-MM-DD`) | Days remaining until a target date                                         |
 | `days_since` | `label` (string), `start_date` (string, `YYYY-MM-DD`)  | Days elapsed since a start date — `countdown`'s mirror image               |
 
-**Backend needs**: nothing.
+**Backend needs**: nothing. `countdown` and `days_since` break the gap into days, hours, minutes
+and seconds in the browser, measured at the moment of the last fetch (`fetchedAt`): like every
+widget, they stay frozen until the next refresh instead of ticking on their own.
 
 ## Clock
 
-No account required — reads the server's own clock through `Intl`'s timezone conversion.
+No account required — the current time comes from timeapi.io, a free keyless API queried per timezone.
 
 | Widget          | Params                                             | Description                                               |
 | --------------- | -------------------------------------------------- | --------------------------------------------------------- |
@@ -205,9 +197,9 @@ No account required — reads the server's own clock through `Intl`'s timezone c
 | `timer`         | `label` (string), `minutes` (integer, 0-1440), `seconds` (integer, 0-59)      | A configurable countdown timer, with start/pause/reset             |
 
 **Backend needs**: nothing. An unrecognized timezone name returns a 400 rather than silently
-falling back to UTC. The frontend ticks both clocks client-side every second (analog sweeps
-continuously at ~20fps) between Timer polls, so they read as real running clocks rather than only
-updating once per refresh. The `timer` widget's duration is validated server-side (must be longer
+falling back to UTC, and an unreachable time service a 424. Both clocks show the time as of the
+last fetch and stay frozen until the next refresh: the frontend does not tick them in between,
+so what they display is always what the time service last reported. The `timer` widget's duration is validated server-side (must be longer
 than 0 seconds, at most 24h), but its running/paused state and countdown are entirely client-side —
 the server has no notion of "started", since that changes far more often than any refresh rate
 would poll for.
@@ -261,7 +253,7 @@ Every widget listed above is built the same way, regardless of service:
   (`data`/`config` in via props, no network calls of their own), rendered through the shared
   `WidgetFrame` component for consistent shape/size (square/wide/tall/large), "no data yet" state
   and refresh timestamp.
-- **OAuth services** (`github`, `youtube`, `spotify`, `pinterest`): each has its own
+- **OAuth services** (`github`, `youtube`, `discord`): each has its own
   `<service>/oauth.js` with the same shape — `buildAuthorizeUrl`, `verifyState`,
   `exchangeCodeForToken`, `refreshAccessToken`. Registering it in `OAUTH_PROVIDERS`
   (`services.controller.js`) is all it takes to get the generic

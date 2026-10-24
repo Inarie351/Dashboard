@@ -20,6 +20,18 @@ export default function Services() {
     window.location.href = url;
   }
 
+  async function disconnect(name) {
+    setError(null);
+    try {
+      await servicesApi.unsubscribeFromService(name);
+      setServices((prev) =>
+        prev.map((s) => (s.name === name ? { ...s, subscribed: false, available: false } : s)),
+      );
+    } catch {
+      setError(`Could not disconnect ${name}.`);
+    }
+  }
+
   async function subscribe(name) {
     await servicesApi.subscribeToService(name);
     window.location.reload();
@@ -47,7 +59,19 @@ export default function Services() {
                   {service.widgets.length} widget{service.widgets.length > 1 ? 's' : ''}
                 </p>
               </div>
-              {service.available ? (
+              {service.available && service.requiresAuth ? (
+                <div className="flex items-center gap-2">
+                  <span className="rounded-full bg-olive-pale px-2.5 py-1 text-xs font-medium text-olive">
+                    Connected
+                  </span>
+                  <button
+                    onClick={() => disconnect(service.name)}
+                    className="rounded-lg px-3 py-1.5 text-sm font-medium text-terracotta transition-[background-color,transform] duration-150 ease-[var(--ease-out)] hover:bg-terracotta-pale/60 active:scale-[0.97]"
+                  >
+                    Disconnect
+                  </button>
+                </div>
+              ) : service.available ? (
                 <span className="rounded-full bg-olive-pale px-2.5 py-1 text-xs font-medium text-olive">
                   Available
                 </span>

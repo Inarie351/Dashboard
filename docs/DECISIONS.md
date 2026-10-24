@@ -29,12 +29,16 @@ before building on them).
 | 13 | Hand-written OAuth2 instead of Passport                             | OAuth      |
 | 14 | One generic OAuth route pair for every provider                     | OAuth      |
 | 15 | Third-party tokens encrypted at rest (AES-256-GCM)                  | Security   |
-| 16 | YouTube and Spotify as OAuth services; `streaming` removed          | Widgets    |
+| 16 | YouTube as an OAuth service; `streaming` removed                    | Widgets    |
 | 17 | Retry transient network failures; resolve DNS to IPv4 first         | Reliability|
 | 18 | Themes as CSS variables switched by one attribute                   | Frontend   |
 | 19 | Theme and wallpaper stored per browser                              | Frontend   |
 | 20 | Floating app shell with `position: fixed`, not `sticky`             | Frontend   |
 | 21 | GDPR notice written from the code, contact set per deployment      | Compliance |
+| 22 | Widgets stay frozen between refreshes                               | Widgets    |
+| 23 | In-app confirmation dialogs instead of native `confirm`             | Frontend   |
+| 24 | Clock time from an external API, not the server clock              | Widgets    |
+| 25 | Discord messages read by a bot, public channels only               | OAuth      |
 
 ---
 
@@ -160,22 +164,21 @@ before building on them).
 - **Decision.** Implement the Authorization Code flow directly: the user id travels in a signed,
   10-minute JWT `state` parameter, which also protects the callback against CSRF.
 - **Consequences.** A few dozen lines per provider, fully tested, no session store. Each provider's
-  quirks (Google's `access_type=offline` + `prompt=consent`, Basic auth for Spotify/Pinterest,
-  Spotify's `127.0.0.1` redirect rule) are explicit in code.
+  quirks (Google's `access_type=offline` + `prompt=consent`, Basic auth for Discord) are explicit in code.
 
 ### 14. One generic OAuth route pair for every provider
 
-- **Context.** After GitHub, YouTube and Spotify needed the same start/callback logic, then
-  Pinterest.
+- **Context.** After GitHub, YouTube needed the same start/callback logic, then
+  Discord.
 - **Decision.** Every provider module exposes the same four functions; an `OAUTH_PROVIDERS` map
   drives `GET /api/services/:service/oauth/start|callback`, and `requiresAuth` is derived from it.
   The frontend shows *Connect* buttons from `requiresAuth` instead of hard-coding names.
-- **Consequences.** Adding Pinterest took one new module and one line in the map; behavior
+- **Consequences.** Adding Discord took one new module and one line in the map; behavior
   (declined consent, redirects, storage) is identical for every provider.
 
 ### 15. Third-party tokens encrypted at rest (AES-256-GCM)
 
-- **Context.** Linked-account tokens give access to users' GitHub, Google, Spotify and Pinterest
+- **Context.** Linked-account tokens give access to users' GitHub, Google and Discord
   data.
 - **Decision.** Encrypt them before storing (`CREDENTIALS_ENCRYPTION_KEY`, random IV per value, GCM
   authentication tag); decrypt only in memory when a widget needs them; refresh expired tokens
@@ -183,13 +186,13 @@ before building on them).
 - **Consequences.** A database dump alone doesn't expose usable tokens; tampering is detected. The
   key becomes a secret to manage: losing it means users must reconnect their accounts.
 
-### 16. YouTube and Spotify as OAuth services; `streaming` removed
+### 16. YouTube as an OAuth service; `streaming` removed
 
-- **Context.** A first `streaming` service covered public YouTube/Spotify data with app-level keys.
+- **Context.** A first `streaming` service covered public YouTube data with app-level keys.
   Adding per-user widgets (Watch Later, top tracks, now playing) required OAuth, which would have
-  meant three services about the same two platforms — confusing to use and to evaluate.
-- **Decision.** Remove `streaming`; keep `youtube` and `spotify` as standalone OAuth services with
-  four widgets each, every widget using the user's own token (a user token can read public data
+  meant two services about the same platform — confusing to use and to evaluate.
+- **Decision.** Remove `streaming`; keep `youtube` as a standalone OAuth service with
+  four widgets, every widget using the user's own token (a user token can read public data
   too), with one shared client per service.
 - **Consequences.** A clear catalog (one service per platform), one authentication model per
   service, the same pattern as GitHub. The YouTube API key disappeared; public widgets now require
@@ -241,3 +244,45 @@ before building on them).
   registration form, and a `LEGAL_CONTACT_EMAIL` variable for the controller's contact.
 - **Consequences.** The notice must be updated whenever a service, a stored field or a third party
   is added. Rectification and erasure are self-service; data export is currently on request.
+
+### 22. Widgets stay frozen between refreshes
+
+- **Context.** The clocks, `countdown` and `days_since` ticked every second (the analog clock at
+  20 fps) with their own browser timers, on top of the refresh Timer. The refresh rate then meant
+  nothing for them, and the same dashboard mixed widgets that moved and widgets that did not.
+- **Decision.** A widget shows the last response until the next refresh, whatever its type. Derived
+  values (days, hours, minutes between two dates) are computed at `fetchedAt`, not at render time.
+  Only `timer`, which the user starts and pauses, keeps running. Each card shows a live "next in Ns"
+  counter so the wait is visible.
+- **Consequences.** One rule for every widget, and a refresh rate that is always meaningful. A
+  clock looks stepped: with a 60 s rate it is up to 60 s behind, which is the user's own setting.
+
+### 23. In-app confirmation dialogs instead of native `confirm`
+
+- **Context.** Deleting a widget or an account, or turning off sharing, used `window.confirm`: an
+  unstyled system box that blocks the page and ignores the theme.
+- **Decision.** One `ConfirmDialog` (portal, Escape and backdrop to cancel, focus on *Cancel*,
+  `alertdialog` role) behind a `useConfirm()` hook that returns a promise, so call sites keep the
+  shape `if (!(await confirm(...))) return;`.
+- **Consequences.** A consistent, themeable and accessible prompt; any new confirmation reuses the
+  hook. The component must be rendered by each page that asks.
+
+### 24. Clock time from an external API, not the server clock
+
+- **Context.** The clocks read the server's own clock through `Intl`.
+- **Decision.** Ask `timeapi.io` (free, no key) for the time of the requested IANA timezone, via a
+  `client.js` like every other service; `timer` stays local.
+- **Consequences.** The clock is a real consumer of a third-party API, with retries and clear errors
+  (400 for an unknown zone, 424 when the service is unreachable). It now depends on that service's
+  availability and rate limits; a short cache or an `Intl` fallback would remove that dependency.
+
+### 25. Discord messages read by a bot, public channels only
+
+- **Context.** Discord exposes neither a user's notifications nor their DMs to applications, and an
+  OAuth user token cannot read channels. Only a bot can read channel messages.
+- **Decision.** The `channel_messages` widget uses a bot token held by the backend, and shows a
+  channel only if the linked account is a member of its server **and** `@everyone` can view it and
+  read its history (computed from the server roles and the channel's permission overwrites).
+- **Consequences.** A bot sees far more than any single user, so this check is what stops a user
+  from reading a channel by guessing its ID; private channels return 403. The bot must be invited
+  with the *Message Content* intent, and the legal notice states that it reads these messages.
