@@ -14,7 +14,7 @@
     "lint:fix": "eslint backend/src frontend/src --ext .js,.jsx --fix",
     "format": "prettier --write .",
     "test": "npm run test -w backend",
-    "prepare": "husky"
+    "prepare": "husky || true"
   },
   "devDependencies": {
     "eslint": "^8.57.0",
